@@ -1,9 +1,7 @@
 from typing import Any
-from decouple import config, AutoConfig
-from typing import Union
 from BrownieAtelierMongo.models.mongo_model import MongoModel
 from BrownieAtelierMongo.models.mongo_common_model import MongoCommonModel
-# config = AutoConfig(search_path="./shared")
+from BrownieAtelierMongo import settings
 
 
 class ControllerModel(MongoCommonModel):
@@ -11,7 +9,7 @@ class ControllerModel(MongoCommonModel):
     controllerコレクション用モデル
     '''
     mongo: MongoModel
-    collection_name: str = str(config('BROWNIE_ATELIER_MONGO__MONGO_CONTROLLER', default='controller'))
+    collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CONTROLLER
 
     def crawl_point_get(self, domain_name: str, spider_name: str) -> dict:
         '''
@@ -135,30 +133,3 @@ class ControllerModel(MongoCommonModel):
 
         self.update_one(
             {'document_type': 'regular_observation_controller'}, {"$set":record},)
-
-    def brownie_atelier_mongo_manual_mode_get(self) -> bool:
-        '''
-        '''
-        record: Union[dict[str,bool],None] = self.find_one(
-            filter={'$and': [{'document_type': 'brownie_atelier_mongo_manual_mode'}]})
-
-        if record:
-            return record['brownie_atelier_mongo_manual_mode_flag']
-        else:
-            return False
-
-    def brownie_atelier_mongo_manual_mode_set(self, brownie_atelier_manual_mode_flag: bool) -> None:
-        '''
-        BrownieAtelierMongoのマニュアル操作のフラグ
-        true  -> マニュアル操作中。mongoDBコンテナの自動停止させない。
-        false -> 定期観測（自動クロール）中。定期観測処理終了後、mongoDBコンテナを自動停止する。
-        '''
-        record: Any = self.find_one(
-            filter={'$and': [{'document_type': 'brownie_atelier_manual_mode'}]})
-        record = {
-            'document_type': 'brownie_atelier_mongo_manual_mode',
-            'brownie_atelier_mongo_manual_mode_flag': brownie_atelier_manual_mode_flag
-        }
-
-        self.update_one({'document_type': 'brownie_atelier_mongo_manual_mode'}, {"$set":record},)
-
