@@ -1,3 +1,5 @@
+from typing import Optional
+from logging import Logger,LoggerAdapter
 from pymongo.mongo_client import MongoClient
 from pymongo.database import Database
 from urllib.parse import quote_plus
@@ -14,8 +16,16 @@ class MongoModel(object):
     __mongo_pass: str
     __mongo_client: MongoClient
     mongo_db: Database
+    logger:Logger
 
-    def __init__(self):
+    def __init__(self, param_logger: Optional[Logger] = None):
+        if param_logger:
+            self.logger = param_logger
+        else:
+            self.logger = settings.logger
+
+
+
         self.__mongo_server = settings.BROWNIE_ATELIER_MONGO__MONGO_SERVER
         self.__mongo_port = settings.BROWNIE_ATELIER_MONGO__MONGO_PORT
         self.__mongo_db_name = settings.BROWNIE_ATELIER_MONGO__MONGO_USE_DB

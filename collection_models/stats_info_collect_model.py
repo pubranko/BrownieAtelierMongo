@@ -1,6 +1,6 @@
 from typing import Any
-from BrownieAtelierMongo.models.mongo_model import MongoModel
-from BrownieAtelierMongo.models.mongo_common_model import MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo import settings
 
 
@@ -10,6 +10,8 @@ class StatsInfoCollectModel(MongoCommonModel):
     '''
     mongo: MongoModel
     collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__STATS_INFO_COLLECT
+
+
 
     def stats_update(self, records: list, status_key: str = ''):
         ''' '''

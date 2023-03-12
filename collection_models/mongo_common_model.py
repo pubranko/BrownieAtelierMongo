@@ -1,5 +1,5 @@
 from typing import Union
-from BrownieAtelierMongo.models.mongo_model import MongoModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
 
 
