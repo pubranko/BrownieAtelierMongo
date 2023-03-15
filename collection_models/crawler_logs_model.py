@@ -11,7 +11,8 @@ class CrawlerLogsModel(MongoCommonModel):
     crawler_logsコレクション用モデル
     '''
     mongo: MongoModel
-    collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CRAWLER_LOGS
+    # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CRAWLER_LOGS
+    COLLECTION_NAME: Final[str] = 'crawler_logs'
 
     # spider_reportとstatsのログ（他はまだ見ていない）
     START_TIME: Final[str] = 'start_time'
@@ -70,12 +71,12 @@ class CrawlerLogsModel(MongoCommonModel):
         # インデックスの有無を確認し、なければ作成する。
         # ※sort使用時、indexがないとメモリ不足となるため。
         create_index_flg:bool = True
-        for indexes in self.mongo.mongo_db[self.collection_name].list_indexes():
+        for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
             for idx in indexes[self.KEY]:
                 if idx == self.START_TIME:
                     create_index_flg = False
         if create_index_flg:
-            self.mongo.mongo_db[self.collection_name].create_index(self.START_TIME)
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.START_TIME)
 
     def spider_report_insert(self, crawling_start_time: datetime, domain: str, spider_name: str, stats: MemoryStatsCollector, crawl_urls_list: list[dict]):
         '''

@@ -11,7 +11,8 @@ class CrawlerResponseModel(MongoCommonModel):
     crawler_responseコレクション用モデル
     '''
     mongo: MongoModel
-    collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CRAWLER_RESPONSE
+    # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CRAWLER_RESPONSE
+    COLLECTION_NAME: Final[str] = 'crawler_response'
 
     ###############################
     # コレクション内の項目名定数
@@ -56,12 +57,12 @@ class CrawlerResponseModel(MongoCommonModel):
         # ※sort使用時、indexがないとメモリ不足となるため。
         index_list: list = []
         # indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
-        for indexes in self.mongo.mongo_db[self.collection_name].list_indexes():
+        for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
             index_list = [idx for idx in indexes['key']]
 
         # レスポンス単位のindexがなかった場合、インデックスを作成する。
         if not self.RESPONSE_TIME in index_list:
-            self.mongo.mongo_db[self.collection_name].create_index(
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(
                 self.RESPONSE_TIME)
         # if not 'domain' in index_list:
         #     self.mongo.mongo_db[self.collection_name].create_index('domain')
@@ -69,7 +70,7 @@ class CrawlerResponseModel(MongoCommonModel):
         # ドメイン>レスポンス単位のindexがなかった場合、インデックスを作成する。
         # if not 'domain__response_time' in index_list:
         if not self.DOMAIN__RESPONSE_TIME in index_list:
-            self.mongo.mongo_db[self.collection_name].create_index(
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(
                 [(self.DOMAIN, ASCENDING), (self.RESPONSE_TIME, ASCENDING)])
 
     def news_clip_master_register_result(self, url: str, response_time: datetime, news_clip_master_register: str) -> None:

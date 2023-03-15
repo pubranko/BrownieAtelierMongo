@@ -9,7 +9,8 @@ class ControllerModel(MongoCommonModel):
     controllerコレクション用モデル
     '''
     mongo: MongoModel
-    collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CONTROLLER
+    # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CONTROLLER
+    COLLECTION_NAME: Final[str] = 'controller'
 
     ###############################
     # コレクション内の項目名定数

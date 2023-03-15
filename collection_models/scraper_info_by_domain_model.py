@@ -12,7 +12,8 @@ class ScraperInfoByDomainModel(MongoCommonModel):
     scraper_by_domainコレクション用モデル
     '''
     mongo: MongoModel
-    collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__SCRAPER_BY_DOMAIN
+    # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__SCRAPER_BY_DOMAIN
+    COLLECTION_NAME: Final[str] = 'scraper_by_domain'
 
     ###########################
     # 定数 ()

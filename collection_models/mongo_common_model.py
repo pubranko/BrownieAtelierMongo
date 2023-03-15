@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Final
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
 
@@ -9,7 +9,8 @@ class MongoCommonModel(object):
     各コレクション別のクラスでは当クラスを継承することで共通の関数を定義する必要がなくなる。
     '''
     mongo: MongoModel
-    collection_name: str = 'sample'
+    # collection_name: str = 'sample'
+    COLLECTION_NAME: str = 'sample'
 
     def __init__(self, mongo: MongoModel):
         self.mongo = mongo
@@ -30,27 +31,27 @@ class MongoCommonModel(object):
         コレクション内の条件付き件数のカウント。
         絞り込み条件がある場合、filterを指定してください。
         '''
-        return self.mongo.mongo_db[self.collection_name].count_documents(filter=filter)
+        return self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(filter=filter)
 
     def estimated_document_count(self):
         '''コレクション内のドキュメント総数のカウント'''
-        return self.mongo.mongo_db[self.collection_name].estimated_document_count()
+        return self.mongo.mongo_db[self.COLLECTION_NAME].estimated_document_count()
 
     def find_one(self, projection=None, filter=None):
-        return self.mongo.mongo_db[self.collection_name].find_one(projection=projection, filter=filter)
+        return self.mongo.mongo_db[self.COLLECTION_NAME].find_one(projection=projection, filter=filter)
 
     # def find(self, projection=None, filter=None, sort=None, index=None):
     def find(self, projection=None, filter=None, sort=None):
-        return self.mongo.mongo_db[self.collection_name].find(projection=projection, filter=filter, sort=sort)
+        return self.mongo.mongo_db[self.COLLECTION_NAME].find(projection=projection, filter=filter, sort=sort)
 
     def insert_one(self, item):
-        self.mongo.mongo_db[self.collection_name].insert_one(item)
+        self.mongo.mongo_db[self.COLLECTION_NAME].insert_one(item)
 
     def insert(self, items: list):
-        self.mongo.mongo_db[self.collection_name].insert_many(items)
+        self.mongo.mongo_db[self.COLLECTION_NAME].insert_many(items)
 
     def update_one(self, filter, record: dict) -> None:
-        self.mongo.mongo_db[self.collection_name].update_one(
+        self.mongo.mongo_db[self.COLLECTION_NAME].update_one(
             filter, record, upsert=True)
 
     # def update_many(self, filter, record: dict) -> None:
@@ -58,7 +59,7 @@ class MongoCommonModel(object):
     #         filter, record, upsert=True)
 
     def delete_many(self, filter) -> int:
-        result = self.mongo.mongo_db[self.collection_name].delete_many(
+        result = self.mongo.mongo_db[self.COLLECTION_NAME].delete_many(
             filter=filter)
         return int(result.deleted_count)
 
@@ -68,7 +69,7 @@ class MongoCommonModel(object):
             {'$unwind': '$' + aggregate_key},
             {'$group': {'_id': '$' + aggregate_key, 'count': {'$sum': 1}}},
         ]
-        return self.mongo.mongo_db[self.collection_name].aggregate(pipeline=pipeline)
+        return self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline=pipeline)
 
     def limited_find(self, projection=None, filter:dict[str,list] ={}, sort=None, limit: int = 100):
         '''
@@ -81,7 +82,7 @@ class MongoCommonModel(object):
         '''
         # 対象件数を確認
         #record_count = self.find(filter=filter).count()
-        record_count = self.mongo.mongo_db[self.collection_name].count_documents(filter=filter)
+        record_count = self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(filter=filter)
         # 100件単位で処理を実施
         skip_list = list(range(0, record_count, limit))
         for skip in skip_list:
