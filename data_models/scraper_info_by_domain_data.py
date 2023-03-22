@@ -4,7 +4,20 @@ import pandas as pd
 from typing import Any, Tuple, Generator, Final, Optional
 from pydantic import BaseModel, ValidationError, validator, Field
 from pydantic.main import ModelMetaclass
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
+
+
+class ScraperInfoByDomainConst:
+    '''ScraperInfoByDomainの定数用クラス'''
+    DOMAIN: Final[str] = 'domain'
+    SCRAPE_ITEMS: Final[str] = 'scrape_items'
+    SCRAPE_ITEMS__TITLE_SCRAPER: Final[str] = 'scrape_items__title_scraper'
+    SCRAPE_ITEMS__ARTICLE_SCRAPER: Final[str] = 'scrape_items__article_scraper'
+    SCRAPE_ITEMS__PUBLISH_DATE_SCRAPER: Final[str] = 'scrape_items__publish_date_scraper'
+    ITEM__PATTERN: Final[str] = 'pattern'
+    ITEM__CSS_SELECTER: Final[str] = 'css_selecter'
+    ITEM__PRIORITY: Final[str] = 'priority'
+    ITEM__REGISTER_DATE: Final[str] = 'register_date'
+
 
 
 class ScraperInfoByDomainData(BaseModel):
@@ -18,7 +31,7 @@ class ScraperInfoByDomainData(BaseModel):
 
     '''
     定義順にチェックされる。
-    valuesにはチェック済みの値のみが入るため順序は重要。(単項目チェック、関連項目チェックの順で定義するのが良さそう。)
+    valuesにはチェック済みの値のみが入るため順序は重要。(単項目チェック、関連項目チェックの順で定義するのが良さそう。)ScraperInfoByDomainConst.
     '''
     ##################################
     # 単項目チェック、省略時の値設定
@@ -27,35 +40,35 @@ class ScraperInfoByDomainData(BaseModel):
     @validator('scraper')
     def scraper_domain_check(cls, value: dict, values: dict) -> dict:
         # if not 'domain' in value:
-        if not ScraperInfoByDomainModel.DOMAIN in value:
+        if not ScraperInfoByDomainConst.DOMAIN in value:
             raise ValueError(
-                f'不正データ。ドメイン({ScraperInfoByDomainModel.DOMAIN})が定義されていません。{value}')
-        elif not type(value[ScraperInfoByDomainModel.DOMAIN]) is str:
+                f'不正データ。ドメイン({ScraperInfoByDomainConst.DOMAIN})が定義されていません。{value}')
+        elif not type(value[ScraperInfoByDomainConst.DOMAIN]) is str:
             raise ValueError(
-                f'不正データ。ドメイン({ScraperInfoByDomainModel.DOMAIN})の値が文字列型以外はエラー({type(value["domain"])})')
+                f'不正データ。ドメイン({ScraperInfoByDomainConst.DOMAIN})の値が文字列型以外はエラー({type(value["domain"])})')
         return value
 
     @validator('scraper')
     def scraper_items_check(cls, value: dict, values: dict) -> dict:
         # if not 'scrape_items' in value:
-        if not ScraperInfoByDomainModel.SCRAPE_ITEMS in value:
+        if not ScraperInfoByDomainConst.SCRAPE_ITEMS in value:
             raise ValueError(
-                f'不正データ。スクレイプアイテム({ScraperInfoByDomainModel.SCRAPE_ITEMS})が定義されていません。({value})')
-        elif not type(value[ScraperInfoByDomainModel.SCRAPE_ITEMS]) is dict:
+                f'不正データ。スクレイプアイテム({ScraperInfoByDomainConst.SCRAPE_ITEMS})が定義されていません。({value})')
+        elif not type(value[ScraperInfoByDomainConst.SCRAPE_ITEMS]) is dict:
             raise ValueError(
-                f'不正データ。スクレイプアイテム({ScraperInfoByDomainModel.SCRAPE_ITEMS})の値が辞書型以外はエラー。{type(value[ScraperInfoByDomainModel.SCRAPE_ITEMS])}')
-        elif len(value[ScraperInfoByDomainModel.SCRAPE_ITEMS]) == 0:
+                f'不正データ。スクレイプアイテム({ScraperInfoByDomainConst.SCRAPE_ITEMS})の値が辞書型以外はエラー。{type(value[ScraperInfoByDomainConst.SCRAPE_ITEMS])}')
+        elif len(value[ScraperInfoByDomainConst.SCRAPE_ITEMS]) == 0:
             raise ValueError(
-                f'不正データ。スクレイプアイテム({ScraperInfoByDomainModel.SCRAPE_ITEMS})内のスクレイパーが定義されていません。{len(value[ScraperInfoByDomainModel.SCRAPE_ITEMS])}')
+                f'不正データ。スクレイプアイテム({ScraperInfoByDomainConst.SCRAPE_ITEMS})内のスクレイパーが定義されていません。{len(value[ScraperInfoByDomainConst.SCRAPE_ITEMS])}')
         else:
-            items: list = [ScraperInfoByDomainModel.ITEM__PATTERN, ScraperInfoByDomainModel.ITEM__CSS_SELECTER,
-                            ScraperInfoByDomainModel.ITEM__PRIORITY, ScraperInfoByDomainModel.ITEM__REGISTER_DATE]
-            for scrape_item_key, scrape_item_value in value[ScraperInfoByDomainModel.SCRAPE_ITEMS].items():
+            items: list = [ScraperInfoByDomainConst.ITEM__PATTERN, ScraperInfoByDomainConst.ITEM__CSS_SELECTER,
+                            ScraperInfoByDomainConst.ITEM__PRIORITY, ScraperInfoByDomainConst.ITEM__REGISTER_DATE]
+            for scrape_item_key, scrape_item_value in value[ScraperInfoByDomainConst.SCRAPE_ITEMS].items():
                 path = os.path.join('prefect_lib', 'scraper',
                                     f'{scrape_item_key}.py')
                 if len(glob.glob(path)) == 0:
                     raise ValueError(
-                        f'不正データ。スクレイプアイテム({ScraperInfoByDomainModel.SCRAPE_ITEMS})で指定されたスクレイパーは登録されていないため使用できません。({scrape_item_key})')
+                        f'不正データ。スクレイプアイテム({ScraperInfoByDomainConst.SCRAPE_ITEMS})で指定されたスクレイパーは登録されていないため使用できません。({scrape_item_key})')
                 elif not type(scrape_item_value) is list:
                     raise ValueError(
                         f'不正データ。スクレイパーの値がリスト型以外はエラー。({scrape_item_value})')
@@ -81,20 +94,20 @@ class ScraperInfoByDomainData(BaseModel):
     # カスタマイズデータ
     #####################################
     def domain_get(self) -> str:
-        return self.scraper[ScraperInfoByDomainModel.DOMAIN]
+        return self.scraper[ScraperInfoByDomainConst.DOMAIN]
 
     def making_into_a_table_format(self) -> list[dict[str, Any]]:
         '''ドメイン別スクレイパー情報を表形式へ加工'''
         result: list = []
-        scrape_items: dict = self.scraper[ScraperInfoByDomainModel.SCRAPE_ITEMS]
+        scrape_items: dict = self.scraper[ScraperInfoByDomainConst.SCRAPE_ITEMS]
         for scraper_item_key, scraper_item_value in scrape_items.items():
 
             for pattern_info in scraper_item_value:
                 result.append({
-                    ScraperInfoByDomainModel.DOMAIN: self.scraper[ScraperInfoByDomainModel.DOMAIN],
-                    ScraperInfoByDomainModel.SCRAPE_ITEMS: scraper_item_key,
-                    ScraperInfoByDomainModel.ITEM__PATTERN: pattern_info[ScraperInfoByDomainModel.ITEM__PATTERN],
-                    ScraperInfoByDomainModel.ITEM__PRIORITY: pattern_info[ScraperInfoByDomainModel.ITEM__PRIORITY],
+                    ScraperInfoByDomainConst.DOMAIN: self.scraper[ScraperInfoByDomainConst.DOMAIN],
+                    ScraperInfoByDomainConst.SCRAPE_ITEMS: scraper_item_key,
+                    ScraperInfoByDomainConst.ITEM__PATTERN: pattern_info[ScraperInfoByDomainConst.ITEM__PATTERN],
+                    ScraperInfoByDomainConst.ITEM__PRIORITY: pattern_info[ScraperInfoByDomainConst.ITEM__PRIORITY],
                     # 'count_of_use': 0,
                 })
         return result
@@ -104,11 +117,11 @@ class ScraperInfoByDomainData(BaseModel):
         scrape_itemsを返すジェネレーター
         '''
         scrape_items: dict[str, list[dict[str, str]]
-                           ] = self.scraper[ScraperInfoByDomainModel.SCRAPE_ITEMS]
+                           ] = self.scraper[ScraperInfoByDomainConst.SCRAPE_ITEMS]
         for scraper, pattern_list in scrape_items.items():
             # patternリストは、patternで降順にソート
             pattern_list = sorted(pattern_list,
-                                  key=lambda d: d[ScraperInfoByDomainModel.ITEM__PATTERN], reverse=True)
+                                  key=lambda d: d[ScraperInfoByDomainConst.ITEM__PATTERN], reverse=True)
             yield scraper, pattern_list
 
     # コレクション側から移植予定,,,既にあったｗ

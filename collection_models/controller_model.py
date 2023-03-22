@@ -51,7 +51,7 @@ class ControllerModel(MongoCommonModel):
         まだ存在しない場合、空のdictを返す。
         '''
         record: Any = self.find_one(
-            filter={'$and': [{self.DOMAIN: domain_name}, {self.DOCUMENT_TYPE: self.DOCUMENT_TYPE}]})
+            filter={'$and': [{self.DOMAIN: domain_name}, {self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__CRAWL_POINT}]})
 
         next_point_record: dict = {}
         # レコードが存在し、かつ、同じスパイダーでクロール実績がある場合
@@ -64,10 +64,10 @@ class ControllerModel(MongoCommonModel):
     def crawl_point_update(self, domain_name: str, spider_name: str, next_point_info: dict) -> None:
         '''次回のクロールポイント情報(lastmod,urlなど)を更新する'''
         record: Any = self.find_one(
-            filter={'$and': [{self.DOMAIN: domain_name}, {self.DOCUMENT_TYPE: self.DOCUMENT_TYPE}]})
+            filter={'$and': [{self.DOMAIN: domain_name}, {self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__CRAWL_POINT}]})
         if record == None:  # ドメインに対して初クロールの場合
             record = {
-                self.DOCUMENT_TYPE: self.DOCUMENT_TYPE,
+                self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__CRAWL_POINT,
                 self.DOMAIN: domain_name,
                 spider_name: next_point_info,
             }
