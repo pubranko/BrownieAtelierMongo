@@ -1,3 +1,6 @@
+from typing import Generator, Any
+import statistics
+import math
 from typing import Union, Final
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
@@ -19,7 +22,7 @@ class MongoCommonModel(object):
         '''
         コレクションのカウント。
         絞り込み条件がある場合、filterを指定してください。
-        コレクション内ドキュメント総数のカウントであれば、filterにはNoneを指定してください。
+        コレクション内ドキュメント総数のカウントであれば、filterに指定は不要です。
         '''
         if type(filter) is dict:
             return self.count_documents(filter)
@@ -90,4 +93,24 @@ class MongoCommonModel(object):
                 filter=filter, projection=projection, sort=sort).skip(skip).limit(limit)
             for record in records:
                 yield record
+            del records # 念の為処理が終わったオブジェクトを削除
 
+    def document_size_info(self) -> dict:
+        '''
+        コレクション内のドキュメントサイズ情報を辞書で返す。
+        return = {count, max, min, mean, sum}
+        '''
+        document_size_list:list[int] = []
+        # ドキュメント内の各要素のサイズを合計しドキュメントのサイズとする。
+        # ドキュメントサイズのリストを生成
+        for record in self.limited_find():
+            document_size:int = sum([ value.__sizeof__() for value in  record.values()])
+            document_size_list.append(document_size)
+
+        return dict(
+            document_coumt = self.count(),
+            document_max = max(document_size_list),
+            document_min = min(document_size_list),
+            document_mean = round(statistics.mean(document_size_list),1),   # 小数点以下1位まで
+            document_sum = sum(document_size_list),
+        )
