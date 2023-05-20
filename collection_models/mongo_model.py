@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from logging import Logger,LoggerAdapter
 from pymongo.mongo_client import MongoClient
 from pymongo.database import Database
@@ -16,9 +16,9 @@ class MongoModel(object):
     __mongo_pass: str
     __mongo_client: MongoClient
     mongo_db: Database
-    logger:Logger
+    logger:Union[Logger,LoggerAdapter]
 
-    def __init__(self, param_logger: Optional[Logger] = None):
+    def __init__(self, param_logger: Optional[Union[Logger,LoggerAdapter]] = None):
         if param_logger:
             self.logger = param_logger
         else:
