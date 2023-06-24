@@ -18,7 +18,7 @@ class MongoCommonModel(object):
     def __init__(self, mongo: MongoModel):
         self.mongo = mongo
 
-    def count(self, filter:Union[dict,None]=None):
+    def count(self, filter:Union[dict,None]=None) -> int:
         '''
         コレクションのカウント。
         絞り込み条件がある場合、filterを指定してください。
