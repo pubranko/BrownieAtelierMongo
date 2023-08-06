@@ -49,7 +49,6 @@ class CrawlerResponseModel(MongoCommonModel):
     NEWS_CLIP_MASTER_REGISTER__SKIP: Final[str] = '登録内容に差異なしのため不要'
     '''定数(value): スクレイプしたデータが登録済みであったため、ニュースクリップマスターへの登録をスキップしたことを意味する。'''
 
-
     def __init__(self, mongo: MongoModel):
         super().__init__(mongo)
 
@@ -77,12 +76,14 @@ class CrawlerResponseModel(MongoCommonModel):
         '''news_clip_masterへの登録結果を反映させる'''
         record: Any = self.find_one(
             filter={'$and': [{self.URL: url}, {self.RESPONSE_TIME: response_time}]})
+
         if record == None:
-            pass
+            self.mongo.logger.warning(
+                f'=== 【url= {url}, response_time= {response_time} news_clip_master_register= {news_clip_master_register}】 のデータでが既に削除されていたためnews_clip_masterへの登録結果を反映させる処理をスキップしました。')
         else:
             record[self.NEWS_CLIP_MASTER_REGISTER] = news_clip_master_register
 
-        self.update_one(
-            {self.URL: url, self.RESPONSE_TIME: response_time},
-            {"$set": record},
-        )
+            self.update_one(
+                {self.URL: url, self.RESPONSE_TIME: response_time},
+                {"$set": record},
+            )
