@@ -7,7 +7,7 @@ from decouple import config, AutoConfig
 
 # ロガー設定。
 # 各モジュールではここで設定した「logger」が使用できます。
-logger: Logger = logging.getLogger('BrownieAtelierNotice')
+logger: Logger = logging.getLogger('BrownieAtelierMongo')
 logger.setLevel(str(config('BROWNIE_ATELIER_MONGO__LOG_LEVEL', default='INFO')))
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
@@ -15,6 +15,9 @@ format='%(asctime)s %(levelname)s [%(name)s] : %(message)s'
 datefmt='%Y-%m-%d %H:%M:%S'
 handler.setFormatter(logging.Formatter(fmt=format, datefmt=datefmt))
 
+# pymongo内のロガー → DEBUGログを出力しないよう設定。
+logger: Logger = logging.getLogger('pymongo')
+logger.setLevel('INFO')
 
 # mongoDB接続設定
 BROWNIE_ATELIER_MONGO__MONGO_SERVER:str = str(config('BROWNIE_ATELIER_MONGO__MONGO_SERVER'))
