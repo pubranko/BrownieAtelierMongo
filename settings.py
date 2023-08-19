@@ -8,7 +8,7 @@ from decouple import config, AutoConfig
 # ロガー設定。
 # 各モジュールではここで設定した「logger」が使用できます。
 logger: Logger = logging.getLogger('BrownieAtelierNotice')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(str(config('BROWNIE_ATELIER_MONGO__LOG_LEVEL', default='INFO')))
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 format='%(asctime)s %(levelname)s [%(name)s] : %(message)s'
