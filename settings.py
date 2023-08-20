@@ -15,9 +15,9 @@ format='%(asctime)s %(levelname)s [%(name)s] : %(message)s'
 datefmt='%Y-%m-%d %H:%M:%S'
 handler.setFormatter(logging.Formatter(fmt=format, datefmt=datefmt))
 
-# pymongo内のロガー → DEBUGログを出力しないよう設定。
-logger: Logger = logging.getLogger('pymongo')
-logger.setLevel('INFO')
+# pymongo内のロガー → DEBUGログ抑制用の設定。
+logging.getLogger('pymongo').setLevel(str(config('BROWNIE_ATELIER_MONGO__LOG_LEVEL', default='INFO')))
+logging.getLogger('pymongo.ocsp_support').setLevel(str(config('BROWNIE_ATELIER_MONGO__LOG_LEVEL', default='INFO')))
 
 # mongoDB接続設定
 BROWNIE_ATELIER_MONGO__MONGO_SERVER:str = str(config('BROWNIE_ATELIER_MONGO__MONGO_SERVER'))
