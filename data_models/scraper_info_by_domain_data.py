@@ -1,9 +1,7 @@
 import os
 import glob
-import pandas as pd
-from typing import Any, Tuple, Generator, Final, Optional
-from pydantic import BaseModel, ValidationError, validator, Field
-from pydantic.main import ModelMetaclass
+from typing import Any, Tuple, Generator, Final
+from pydantic import BaseModel, validator, Field
 
 
 class ScraperInfoByDomainConst:
