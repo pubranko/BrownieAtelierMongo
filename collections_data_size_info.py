@@ -11,6 +11,11 @@ from BrownieAtelierMongo.collection_models.scraped_from_response_model import Sc
 from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 
+'''
+これは手動実行専用。情報はprintでログへ出力。
+'''
+
+
 mongo = MongoModel()
 
 collections:list[MongoCommonModel] = [
