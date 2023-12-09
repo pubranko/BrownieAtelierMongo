@@ -1,5 +1,0 @@
-autopep8
-pydantic
-pymongo
-python-decouple
-wheel
