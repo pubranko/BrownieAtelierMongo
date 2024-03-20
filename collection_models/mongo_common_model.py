@@ -1,7 +1,7 @@
-from typing import Generator, Any
-import statistics
 import math
-from typing import Union, Final
+import statistics
+from typing import Any, Final, Generator, Union
+
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
 

@@ -1,9 +1,11 @@
-from typing import Final
 from datetime import datetime
-from scrapy.statscollectors import MemoryStatsCollector
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
+from typing import Final
+
 from BrownieAtelierMongo import settings
+from BrownieAtelierMongo.collection_models.mongo_common_model import \
+    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from scrapy.statscollectors import MemoryStatsCollector
 
 
 class CrawlerLogsModel(MongoCommonModel):

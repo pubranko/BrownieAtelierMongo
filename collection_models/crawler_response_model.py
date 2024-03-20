@@ -1,9 +1,11 @@
-from typing import Any, Final
 from datetime import datetime
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
-from pymongo import ASCENDING
+from typing import Any, Final
+
 from BrownieAtelierMongo import settings
+from BrownieAtelierMongo.collection_models.mongo_common_model import \
+    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from pymongo import ASCENDING
 
 
 class CrawlerResponseModel(MongoCommonModel):

@@ -1,9 +1,10 @@
-from typing import Optional, Union
 from logging import Logger, LoggerAdapter
-from pymongo.mongo_client import MongoClient
-from pymongo.database import Database
+from typing import Optional, Union
 from urllib.parse import quote_plus
+
 from BrownieAtelierMongo import settings
+from pymongo.database import Database
+from pymongo.mongo_client import MongoClient
 
 
 class MongoModel(object):

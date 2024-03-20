@@ -1,13 +1,13 @@
-from pydantic import ValidationError
-from typing import Tuple, Generator, Final, Optional
-from pymongo.cursor import Cursor
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
+from typing import Final, Generator, Optional, Tuple
+
 from BrownieAtelierMongo import settings
+from BrownieAtelierMongo.collection_models.mongo_common_model import \
+    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainData,
-    ScraperInfoByDomainConst,
-)
+    ScraperInfoByDomainConst, ScraperInfoByDomainData)
+from pydantic import ValidationError
+from pymongo.cursor import Cursor
 
 
 class ScraperInfoByDomainModel(MongoCommonModel):

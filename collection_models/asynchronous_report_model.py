@@ -1,7 +1,9 @@
 from typing import Final
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
+
 from BrownieAtelierMongo import settings
+from BrownieAtelierMongo.collection_models.mongo_common_model import \
+    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 class AsynchronousReportModel(MongoCommonModel):

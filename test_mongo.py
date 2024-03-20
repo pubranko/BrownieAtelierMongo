@@ -1,25 +1,21 @@
-from pymongo.mongo_client import MongoClient
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
+    AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import (
-    AsynchronousReportModel,
-)
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.news_clip_master_model import (
-    NewsClipMasterModel,
-)
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import (
-    ScrapedFromResponseModel,
-)
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import (
-    ScraperInfoByDomainModel,
-)
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import (
-    StatsInfoCollectModel,
-)
+from BrownieAtelierMongo.collection_models.news_clip_master_model import \
+    NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
+    ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
+    ScraperInfoByDomainModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
+from pymongo.mongo_client import MongoClient
 
 mongo = MongoModel()
 asynchronous_report_model = AsynchronousReportModel(mongo)

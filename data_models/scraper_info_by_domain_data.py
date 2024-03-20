@@ -1,7 +1,8 @@
-import os
 import glob
-from typing import Any, Tuple, Generator, Final
-from pydantic import BaseModel, validator, Field
+import os
+from typing import Any, Final, Generator, Tuple
+
+from pydantic import BaseModel, Field, validator
 
 
 class ScraperInfoByDomainConst:
