@@ -1,6 +1,5 @@
-import math
 import statistics
-from typing import Any, Final, Generator, Union
+from typing import Union
 
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
@@ -13,7 +12,6 @@ class MongoCommonModel(object):
     """
 
     mongo: MongoModel
-    # collection_name: str = 'sample'
     COLLECTION_NAME: str = "sample"
 
     def __init__(self, mongo: MongoModel):
@@ -26,16 +24,30 @@ class MongoCommonModel(object):
         コレクション内ドキュメント総数のカウントであれば、filterに指定は不要です。
         """
         if type(filter) is dict:
-            return self.count_documents(filter)
+            # return self.count_documents(filter)
+            return self.aggregation_pipeline(filter)
         else:
             return self.estimated_document_count()
 
-    def count_documents(self, filter: dict):
+    def aggregation_pipeline(self, filter: Union[dict, None] = {}):
         """
-        コレクション内の条件付き件数のカウント。
-        絞り込み条件がある場合、filterを指定してください。
+        フィルターで絞り込みを行ったコレクション内のドキュメント数を返す。
+        Args:
+            filter (Union[dict, None], optional): フィルターを設定。値がない場合は空の辞書({})とする。
         """
-        return self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(filter=filter)
+        pipeline = [
+            filter, # フィルター条件
+            {"$count": "count"} # ドキュメント数をカウント
+        ]
+        result = self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline)
+        return list(result)[0]["count"] if result else 0
+        
+    # def count_documents(self, filter: dict):
+    #     """
+    #     コレクション内の条件付き件数のカウント。
+    #     絞り込み条件がある場合、filterを指定してください。
+    #     """
+    #     return self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(filter=filter)
 
     def estimated_document_count(self):
         """コレクション内のドキュメント総数のカウント"""
@@ -46,7 +58,6 @@ class MongoCommonModel(object):
             projection=projection, filter=filter
         )
 
-    # def find(self, projection=None, filter=None, sort=None, index=None):
     def find(self, projection=None, filter=None, sort=None):
         return self.mongo.mongo_db[self.COLLECTION_NAME].find(
             projection=projection, filter=filter, sort=sort
@@ -71,7 +82,7 @@ class MongoCommonModel(object):
         result = self.mongo.mongo_db[self.COLLECTION_NAME].delete_many(filter=filter)
         return int(result.deleted_count)
 
-    def aggregate(self, aggregate_key: str):
+    def custom_aggregate(self, aggregate_key: str):
         """渡された集計keyによる集計結果を返す。"""
         pipeline = [
             {"$unwind": "$" + aggregate_key},
@@ -91,9 +102,8 @@ class MongoCommonModel(object):
                 pass
         """
         # 対象件数を確認
-        # record_count = self.find(filter=filter).count()
         record_count = self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(
-            filter=filter
+            filter=filter if filter else {}
         )
         # 100件単位で処理を実施
         skip_list = list(range(0, record_count, limit))
