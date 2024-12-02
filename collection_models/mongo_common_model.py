@@ -25,22 +25,22 @@ class MongoCommonModel(object):
         """
         if type(filter) is dict:
             # return self.count_documents(filter)
-            return self.aggregation_pipeline(filter)
+            return self.aggregation_pipeline_count(filter)
         else:
             return self.estimated_document_count()
 
-    def aggregation_pipeline(self, filter: Union[dict, None] = {}):
+    def aggregation_pipeline_count(self, filter: Union[dict, None] = {}) -> int:
         """
         フィルターで絞り込みを行ったコレクション内のドキュメント数を返す。
         Args:
             filter (Union[dict, None], optional): フィルターを設定。値がない場合は空の辞書({})とする。
         """
         pipeline = [
-            filter, # フィルター条件
-            {"$count": "count"} # ドキュメント数をカウント
+            {"$match": filter,}, # フィルター条件
+            {"$count": "totalCount"} # ドキュメント数をカウント
         ]
-        result = self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline)
-        return list(result)[0]["count"] if result else 0
+        result = list(self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline))
+        return int(result[0]["totalCount"]) if result else 0
         
     # def count_documents(self, filter: dict):
     #     """
@@ -102,7 +102,7 @@ class MongoCommonModel(object):
                 pass
         """
         # 対象件数を確認
-        record_count = self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(
+        record_count:int = self.count(
             filter=filter if filter else {}
         )
         # 100件単位で処理を実施
