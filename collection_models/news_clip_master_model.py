@@ -48,15 +48,27 @@ class NewsClipMasterModel(MongoCommonModel):
     SCRAPED_SAVE_START_TIME: Final[str] = "scraped_save_start_time"
     """定数: scraped_save_start_time """
 
+    KEY: Final[str] = "key"
+    """定数: mongoDBよりインデックスを取得する際の項目名"""
+
     def __init__(self, mongo: MongoModel):
         super().__init__(mongo)
 
         # インデックスの有無を確認し、なければ作成する。
-        # ※sort使用時、indexがないとメモリ不足となるため。
-        create_index_flg: bool = True
+        # ※findやsort使用時、indexがないとフルスキャンを行い長時間処理やメモリ不足となるため。
+        #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
+        index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            for idx in indexes["key"]:
-                if idx == "response_time":
-                    create_index_flg = False
-        if create_index_flg:
-            self.mongo.mongo_db[self.COLLECTION_NAME].create_index("response_time")
+            index_list = [idx for idx in indexes[self.KEY]]
+
+        # 各indexがなかった場合、インデックスを作成する。
+        if not self.SCRAPED_SAVE_START_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.SCRAPED_SAVE_START_TIME)
+        if not self.CRAWLING_START_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.CRAWLING_START_TIME)
+        if not self.RESPONSE_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.RESPONSE_TIME)
+        if not self.DOMAIN in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
+        if not self.URL in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.URL)

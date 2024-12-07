@@ -49,15 +49,22 @@ class ScrapedFromResponseModel(MongoCommonModel):
     PUBLISH_DATE: Final[str] = "publish_date"
     """定数: publish_date"""
 
+    KEY: Final[str] = "key"
+    """定数: mongoDBよりインデックスを取得する際の項目名"""
+
     def __init__(self, mongo: MongoModel):
         super().__init__(mongo)
 
         # インデックスの有無を確認し、なければ作成する。
-        # ※sort使用時、indexがないとメモリ不足となるため。
-        create_index_flg: bool = True
+        # ※findやsort使用時、indexがないとフルスキャンを行い長時間処理やメモリ不足となるため。
+        #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
+        index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            for idx in indexes["key"]:
-                if idx == "response_time":
-                    create_index_flg = False
-        if create_index_flg:
-            self.mongo.mongo_db[self.COLLECTION_NAME].create_index("response_time")
+            index_list = [idx for idx in indexes[self.KEY]]
+
+        if not self.SCRAPYING_START_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.SCRAPYING_START_TIME)
+        if not self.RESPONSE_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.RESPONSE_TIME)
+        if not self.DOMAIN in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)

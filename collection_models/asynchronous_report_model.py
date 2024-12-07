@@ -39,3 +39,21 @@ class AsynchronousReportModel(MongoCommonModel):
     """定数(value): 非同期レポートレコードタイプ → ニュースクリップマスター非同期"""
     RECORD_TYPE__SOLR_NEWS_CLIP_ASYNC: Final[str] = "solr_news_clip_async"
     """定数(value): 非同期レポートレコードタイプ → ソーラーニュースクリップ非同期"""
+
+    KEY: Final[str] = "key"
+    """定数: mongoDBよりインデックスを取得する際の項目名"""
+
+
+    def __init__(self, mongo: MongoModel):
+        super().__init__(mongo)
+
+        # インデックスの有無を確認し、なければ作成する。
+        # ※findやsort使用時、indexがないとフルスキャンを行い長時間処理やメモリ不足となるため。
+        #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
+        index_list: list = []
+        for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
+            index_list = [idx for idx in indexes[self.KEY]]
+
+        # 各indexがなかった場合、インデックスを作成する。
+        if not self.START_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.START_TIME)

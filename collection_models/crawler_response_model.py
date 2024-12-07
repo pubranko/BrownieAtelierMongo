@@ -35,6 +35,9 @@ class CrawlerResponseModel(MongoCommonModel):
     CRAWLING_START_TIME: Final[str] = "crawling_start_time"
     """定数: クロール開始時間(key)"""
 
+    KEY: Final[str] = "key"
+    """定数: mongoDBよりインデックスを取得する際の項目名"""
+
     SOURCE_OF_INFORMATION: Final[str] = "source_of_information"
     """定数: クロール対象URLの取得の元の情報を保管する項目(key)"""
     SOURCE_OF_INFORMATION__SOURCE_URL: Final[str] = "source_url"
@@ -43,9 +46,6 @@ class CrawlerResponseModel(MongoCommonModel):
     """定数: クロール対象URLの取得の元の最終更新日時(key)"""
     NEWS_CLIP_MASTER_REGISTER: Final[str] = "news_clip_master_register"
     """定数: ニュースクリップマスターへの登録結果を記録(key)"""
-
-    DOMAIN__RESPONSE_TIME: Final[str] = "domain__response_time"
-    """定数: ドメイン>レスポンス単位のindexの文字列 (mongoDBの仕様。複数の項目によるインデックスの場合、'__'で結合した文字列になる)"""
 
     NEWS_CLIP_MASTER_REGISTER__COMPLETE: Final[str] = "登録完了"
     """定数(value): スクレイプしたデータをニュースクリップマスターへ登録したことを意味する。"""
@@ -56,24 +56,23 @@ class CrawlerResponseModel(MongoCommonModel):
         super().__init__(mongo)
 
         # インデックスの有無を確認し、なければ作成する。
-        # ※sort使用時、indexがないとメモリ不足となるため。
+        # ※findやsort使用時、indexがないとフルスキャンを行い長時間処理やメモリ不足となるため。
+        #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         index_list: list = []
-        # indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            index_list = [idx for idx in indexes["key"]]
+            index_list = [idx for idx in indexes[self.KEY]]
 
-        # レスポンス単位のindexがなかった場合、インデックスを作成する。
+        # 各indexがなかった場合、インデックスを作成する。
         if not self.RESPONSE_TIME in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.RESPONSE_TIME)
-        # if not 'domain' in index_list:
-        #     self.mongo.mongo_db[self.collection_name].create_index('domain')
-
-        # ドメイン>レスポンス単位のindexがなかった場合、インデックスを作成する。
-        # if not 'domain__response_time' in index_list:
-        if not self.DOMAIN__RESPONSE_TIME in index_list:
-            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(
-                [(self.DOMAIN, ASCENDING), (self.RESPONSE_TIME, ASCENDING)]
-            )
+        if not self.CRAWLING_START_TIME in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.CRAWLING_START_TIME)
+        if not self.DOMAIN in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
+        if not self.URL in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.URL)
+        if not self.NEWS_CLIP_MASTER_REGISTER in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.NEWS_CLIP_MASTER_REGISTER)
 
     def news_clip_master_register_result(
         self, url: str, response_time: datetime, news_clip_master_register: str

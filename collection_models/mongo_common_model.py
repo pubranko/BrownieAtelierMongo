@@ -24,8 +24,7 @@ class MongoCommonModel(object):
         コレクション内ドキュメント総数のカウントであれば、filterに指定は不要です。
         """
         if type(filter) is dict:
-            # return self.count_documents(filter)
-            return self.aggregation_pipeline_count(filter)
+            return self.count_documents(filter)
         else:
             return self.estimated_document_count()
 
@@ -42,12 +41,12 @@ class MongoCommonModel(object):
         result = list(self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline))
         return int(result[0]["totalCount"]) if result else 0
         
-    # def count_documents(self, filter: dict):
-    #     """
-    #     コレクション内の条件付き件数のカウント。
-    #     絞り込み条件がある場合、filterを指定してください。
-    #     """
-    #     return self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(filter=filter)
+    def count_documents(self, filter: dict):
+        """
+        コレクション内の条件付き件数のカウント。
+        絞り込み条件がある場合、filterを指定してください。
+        """
+        return self.mongo.mongo_db[self.COLLECTION_NAME].count_documents(filter=filter)
 
     def estimated_document_count(self):
         """コレクション内のドキュメント総数のカウント"""
