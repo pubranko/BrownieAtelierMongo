@@ -57,27 +57,21 @@ class CrawlerLogsModel(MongoCommonModel):
     """レコードタイプ(value): フローレポート  Prefect Flowのログ"""  # 現在タスク名にしているレコードタイプをこれに変更したい。
     RECORD_TYPE__SPIDER_REPORTS: Final[str] = "spider_reports"
     """レコードタイプ(value): スパイダーレポート  Spiderのログ"""
-    # RECORD_TYPE__NEWS_CRAWL_ASYNC: Final[str] = 'news_crawl_async'
-    # '''レコードタイプ(value): ニュースクローラー非同期'''
-    # RECORD_TYPE__NEWS_CLIP_MASTER_ASYNC: Final[str] = 'news_clip_master_async'
-    # '''レコードタイプ(value): ニュースクリップマスター非同期'''
-    # RECORD_TYPE__SOLR_NEWS_CLIP_ASYNC: Final[str] = 'solr_news_clip_async'
-    # '''レコードタイプ(value): ソーラーニュースクリップ非同期'''
-    # RECORD_TYPE__ROBOTS_RESPONSE_STATUS: Final[str] = 'robots_response_status'
-    # '''レコードタイプ(value): ロボットレスポンス統計'''
 
     def __init__(self, mongo: MongoModel):
         super().__init__(mongo)
 
         # インデックスの有無を確認し、なければ作成する。
-        # ※sort使用時、indexがないとメモリ不足となるため。
-        create_index_flg: bool = True
+        # ※findやsort使用時、indexがないとフルスキャンを行い長時間処理やメモリ不足となるため。
+        #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
+        index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            for idx in indexes[self.KEY]:
-                if idx == self.START_TIME:
-                    create_index_flg = False
-        if create_index_flg:
-            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.START_TIME)
+            index_list = [idx for idx in indexes[self.KEY]]
+
+        # 各indexがなかった場合、インデックスを作成する。
+        index_key:str = f"{self.START_TIME}__{self.RECORD_TYPE}__{self.DOMAIN}"
+        if not index_key in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(index_key)
 
     def spider_report_insert(
         self,
