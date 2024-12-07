@@ -50,6 +50,26 @@ class ControllerModel(MongoCommonModel):
     CRAWLING_START_TIME: Final[str] = "crawling_start_time"
     """クロール開始時間(key)"""
 
+    KEY: Final[str] = "key"
+    """定数: mongoDBよりインデックスを取得する際の項目名"""
+
+    def __init__(self, mongo: MongoModel):
+        super().__init__(mongo)
+
+        # インデックスの有無を確認し、なければ作成する。
+        # ※findやsort使用時、indexがないとフルスキャンを行い長時間処理やメモリ不足となるため。
+        #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
+        index_list: list = []
+        for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
+            index_list = [idx for idx in indexes[self.KEY]]
+
+        # 各indexがなかった場合、インデックスを作成する。
+        if not self.DOMAIN in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
+        if not self.DOCUMENT_TYPE in index_list:
+            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOCUMENT_TYPE)
+
+
     def crawl_point_get(self, domain_name: str, spider_name: str) -> dict:
         """
         次回のクロールポイント情報(lastmod,urlなど)を取得し返す。
