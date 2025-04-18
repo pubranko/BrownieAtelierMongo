@@ -26,8 +26,6 @@ class ApiCrawlerResponseModel(MongoCommonModel):
     """定数: クロール開始時間(key)"""
     RESPONSE_TIME: Final[str] = "response_time"
     """定数: レスポンスタイム(key)"""
-    MEETING_DATE: Final[str] = "meeting_date"
-    """定数: 会議が行われた日付(key)"""
     RESPONSE: Final[str] = "response"
     """定数: レスポンス(key)"""
 
@@ -49,8 +47,6 @@ class ApiCrawlerResponseModel(MongoCommonModel):
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.RESPONSE_TIME)
         if not self.CRAWLING_START_TIME in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.CRAWLING_START_TIME)
-        if not self.MEETING_DATE in index_list:
-            self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.MEETING_DATE)
         if not self.DOMAIN in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
         if not self.URL in index_list:
