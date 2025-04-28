@@ -17,6 +17,8 @@ class NationalDietProceedingsMasterModel(MongoCommonModel):
     ###############################
     # コレクション内の項目名定数
     ###############################
+    _ID: Final[str] = "_id"
+    """定数: ドキュメントのID(key)"""
     DOMAIN: Final[str] = "domain"
     """定数: リクエスト・レスポンスのドメイン(key)"""
     URL: Final[str] = "url"

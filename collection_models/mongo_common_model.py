@@ -1,9 +1,9 @@
 import statistics
-from typing import Union
+from typing import Union,Optional
 
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
-
+from pymongo.command_cursor import CommandCursor
 
 class MongoCommonModel(object):
     """
@@ -135,3 +135,36 @@ class MongoCommonModel(object):
             document_mean=round(statistics.mean(document_size_list), 1),  # 小数点以下1位まで
             document_sum=sum(document_size_list),
         )
+
+    def aggregate(self, aggregate_items: dict, filter: Optional[dict] = None, sort: Optional[dict] = None) -> CommandCursor:
+        """
+        MongoDBの集計処理を実行する
+        Args:
+            aggregate_items (dict): グループ化するフィールドと対応するMongoDBフィールド参照の辞書
+            filter (dict, optional): ドキュメントフィルタ条件
+            sort (dict, optional): ソート条件
+        Returns:
+            pymongo.command_cursor.CommandCursor: 集計結果カーソル
+            データイメージ
+                {
+                    "_id": {
+                        "name_of_house": "衆議院",
+                        "name_of_meeting": "第1回本会議",
+                        "issue": "予算案"
+                    },
+                    "count": 5
+                }
+        """
+        pipeline = []
+        
+        if filter:
+            pipeline.append({"$match": filter})
+        
+        if aggregate_items:
+            group_id = {key: value for key, value in aggregate_items.items()}
+            pipeline.append({"$group": {"_id": group_id, "count": {"$sum": 1}}})
+        
+        if sort:
+            pipeline.append({"$sort": sort})
+        
+        return self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline)
