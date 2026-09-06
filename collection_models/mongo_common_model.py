@@ -35,12 +35,14 @@ class MongoCommonModel(object):
             filter (Union[dict, None], optional): フィルターを設定。値がない場合は空の辞書({})とする。
         """
         pipeline = [
-            {"$match": filter,}, # フィルター条件
-            {"$count": "totalCount"} # ドキュメント数をカウント
+            {
+                "$match": filter,
+            },  # フィルター条件
+            {"$count": "totalCount"},  # ドキュメント数をカウント
         ]
         result = list(self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline))
         return int(result[0]["totalCount"]) if result else 0
-        
+
     def count_documents(self, filter: dict):
         """
         コレクション内の条件付き件数のカウント。
@@ -53,14 +55,10 @@ class MongoCommonModel(object):
         return self.mongo.mongo_db[self.COLLECTION_NAME].estimated_document_count()
 
     def find_one(self, projection=None, filter=None):
-        return self.mongo.mongo_db[self.COLLECTION_NAME].find_one(
-            projection=projection, filter=filter
-        )
+        return self.mongo.mongo_db[self.COLLECTION_NAME].find_one(projection=projection, filter=filter)
 
     def find(self, projection=None, filter=None, sort=None):
-        return self.mongo.mongo_db[self.COLLECTION_NAME].find(
-            projection=projection, filter=filter, sort=sort
-        )
+        return self.mongo.mongo_db[self.COLLECTION_NAME].find(projection=projection, filter=filter, sort=sort)
 
     def insert_one(self, item):
         self.mongo.mongo_db[self.COLLECTION_NAME].insert_one(item)
@@ -69,9 +67,7 @@ class MongoCommonModel(object):
         self.mongo.mongo_db[self.COLLECTION_NAME].insert_many(items)
 
     def update_one(self, filter, record: dict) -> None:
-        self.mongo.mongo_db[self.COLLECTION_NAME].update_one(
-            filter, record, upsert=True
-        )
+        self.mongo.mongo_db[self.COLLECTION_NAME].update_one(filter, record, upsert=True)
 
     # def update_many(self, filter, record: dict) -> None:
     #     self.mongo.mongo_db[self.collection_name].update_many(
@@ -89,9 +85,7 @@ class MongoCommonModel(object):
         ]
         return self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline=pipeline)
 
-    def limited_find(
-        self, projection=None, filter: dict[str, list] = {}, sort=None, limit: int = 100
-    ):
+    def limited_find(self, projection=None, filter: dict[str, list] = {}, sort=None, limit: int = 100):
         """
         ・findした結果をレコード単位で返すジェネレーター。
         ・デフォルトで100件単位でデータを取得するが、当メソッドの呼び出し元では
@@ -101,17 +95,11 @@ class MongoCommonModel(object):
                 pass
         """
         # 対象件数を確認
-        record_count:int = self.count(
-            filter=filter if filter else {}
-        )
+        record_count: int = self.count(filter=filter if filter else {})
         # 100件単位で処理を実施
         skip_list = list(range(0, record_count, limit))
         for skip in skip_list:
-            records: Cursor = (
-                self.find(filter=filter, projection=projection, sort=sort)
-                .skip(skip)
-                .limit(limit)
-            )
+            records: Cursor = self.find(filter=filter, projection=projection, sort=sort).skip(skip).limit(limit)
             for record in records:
                 yield record
             del records  # 念の為処理が終わったオブジェクトを削除

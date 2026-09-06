@@ -1,8 +1,7 @@
 from typing import Any, Final
 
 from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
@@ -26,9 +25,7 @@ class ControllerModel(MongoCommonModel):
     """ドキュメントのタイプ(value): クロールポイント"""
     DOCUMENT_TYPE__STOP_CONTROLLER: Final[str] = "stop_controller"
     """ドキュメントのタイプ(value): ストップコントローラー"""
-    DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER: Final[
-        str
-    ] = "regular_observation_controller"
+    DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER: Final[str] = "regular_observation_controller"
     """ドキュメントのタイプ(value): 定期観測コントローラー"""
 
     CRAWLING_STOP_DOMAIN_LIST: Final[str] = "crawling_stop_domain_list"
@@ -69,7 +66,6 @@ class ControllerModel(MongoCommonModel):
         if not self.DOCUMENT_TYPE in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOCUMENT_TYPE)
 
-
     def crawl_point_get(self, domain_name: str, spider_name: str) -> dict:
         """
         次回のクロールポイント情報(lastmod,urlなど)を取得し返す。
@@ -92,9 +88,7 @@ class ControllerModel(MongoCommonModel):
 
         return next_point_record
 
-    def crawl_point_update(
-        self, domain_name: str, spider_name: str, next_point_info: dict
-    ) -> None:
+    def crawl_point_update(self, domain_name: str, spider_name: str, next_point_info: dict) -> None:
         """次回のクロールポイント情報(lastmod,urlなど)を更新する"""
         record: Any = self.find_one(
             filter={
@@ -124,9 +118,7 @@ class ControllerModel(MongoCommonModel):
         """
         stop_controllerからクローリング停止ドメインリストを取得して返す
         """
-        record: Any = self.find_one(
-            filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]}
-        )
+        record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
         if record == None:
             return []
@@ -139,9 +131,7 @@ class ControllerModel(MongoCommonModel):
         """
         stop_controllerのクローリング停止ドメインリストを更新する。
         """
-        record: Any = self.find_one(
-            filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]}
-        )
+        record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
         if record == None:  # 初回の場合
             record = {
@@ -162,9 +152,7 @@ class ControllerModel(MongoCommonModel):
         """
         stop_controllerからスクレイピング停止ドメインリストを取得して返す。
         """
-        record: Any = self.find_one(
-            filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]}
-        )
+        record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
         if record == None:
             return []
@@ -173,15 +161,11 @@ class ControllerModel(MongoCommonModel):
         else:
             return record[self.SCRAPYING_STOP_DOMAIN_LIST]
 
-    def scrapying_stop_domain_list_update(
-        self, scrapying_stop_domain_list: list
-    ) -> None:
+    def scrapying_stop_domain_list_update(self, scrapying_stop_domain_list: list) -> None:
         """
         stop_controllerのスクレイピング停止ドメインリストを更新する。
         """
-        record: Any = self.find_one(
-            filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]}
-        )
+        record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
         if record == None:  # 初回の場合
             record = {
@@ -203,13 +187,7 @@ class ControllerModel(MongoCommonModel):
         定期観測対象のスパイダーのセットを返す。
         """
         record: Any = self.find_one(
-            filter={
-                "$and": [
-                    {
-                        self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER
-                    }
-                ]
-            }
+            filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER}]}
         )
 
         if record == None:
@@ -222,13 +200,7 @@ class ControllerModel(MongoCommonModel):
         定期観測対象のスパイダーセットを更新する。
         """
         record: Any = self.find_one(
-            filter={
-                "$and": [
-                    {
-                        self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER
-                    }
-                ]
-            }
+            filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER}]}
         )
 
         if record == None:  # 初回の場合

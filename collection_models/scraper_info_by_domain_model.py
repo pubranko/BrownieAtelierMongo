@@ -1,11 +1,12 @@
 from typing import Final, Generator, Optional, Tuple
 
 from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainConst, ScraperInfoByDomainData)
+    ScraperInfoByDomainConst,
+    ScraperInfoByDomainData,
+)
 from pydantic import ValidationError
 from pymongo.cursor import Cursor
 
@@ -42,10 +43,7 @@ class ScraperInfoByDomainModel(MongoCommonModel):
         if not self.DOMAIN in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
 
-
-    def find_and_data_models_get(
-        self, filter: Optional[dict[str, str]] = None
-    ) -> list[ScraperInfoByDomainData]:
+    def find_and_data_models_get(self, filter: Optional[dict[str, str]] = None) -> list[ScraperInfoByDomainData]:
         """scraper_by_domainコレクションより取得したデータを「リスト[データクラス,,,]」の形式で返す。"""
         records: Cursor = self.find(filter=filter)
         return [ScraperInfoByDomainData(scraper=record) for record in records]

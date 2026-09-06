@@ -1,8 +1,7 @@
 from typing import Final
 
 from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
@@ -42,7 +41,6 @@ class AsynchronousReportModel(MongoCommonModel):
 
     KEY: Final[str] = "key"
     """定数: mongoDBよりインデックスを取得する際の項目名"""
-
 
     def __init__(self, mongo: MongoModel):
         super().__init__(mongo)

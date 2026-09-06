@@ -1,8 +1,7 @@
 from typing import Final
 
 from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 

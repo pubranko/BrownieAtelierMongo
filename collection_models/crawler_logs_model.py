@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import Final
 
 from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from scrapy.statscollectors import MemoryStatsCollector
 
@@ -69,7 +68,7 @@ class CrawlerLogsModel(MongoCommonModel):
             index_list = [idx for idx in indexes[self.KEY]]
 
         # 各indexがなかった場合、インデックスを作成する。
-        index_key:str = f"{self.START_TIME}__{self.RECORD_TYPE}__{self.DOMAIN}"
+        index_key: str = f"{self.START_TIME}__{self.RECORD_TYPE}__{self.DOMAIN}"
         if not index_key in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(index_key)
 
@@ -103,18 +102,14 @@ class CrawlerLogsModel(MongoCommonModel):
                 temp[record[self.CRAWL_URLS_LIST__SOURCE_URL]].append(
                     {
                         self.CRAWL_URLS_LIST__LOC: record[self.CRAWL_URLS_LIST__LOC],
-                        self.CRAWL_URLS_LIST__LASTMOD: record[
-                            self.CRAWL_URLS_LIST__LASTMOD
-                        ],
+                        self.CRAWL_URLS_LIST__LASTMOD: record[self.CRAWL_URLS_LIST__LASTMOD],
                     }
                 )
             else:
                 temp[record[self.CRAWL_URLS_LIST__SOURCE_URL]] = [
                     {
                         self.CRAWL_URLS_LIST__LOC: record[self.CRAWL_URLS_LIST__LOC],
-                        self.CRAWL_URLS_LIST__LASTMOD: record[
-                            self.CRAWL_URLS_LIST__LASTMOD
-                        ],
+                        self.CRAWL_URLS_LIST__LASTMOD: record[self.CRAWL_URLS_LIST__LASTMOD],
                     }
                 ]
         for key, value in temp.items():

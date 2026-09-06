@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import Any, Final
 
 from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo import ASCENDING
 
@@ -78,9 +77,7 @@ class CrawlerResponseModel(MongoCommonModel):
         self, url: str, response_time: datetime, news_clip_master_register: str
     ) -> None:
         """news_clip_masterへの登録結果を反映させる"""
-        record: Any = self.find_one(
-            filter={"$and": [{self.URL: url}, {self.RESPONSE_TIME: response_time}]}
-        )
+        record: Any = self.find_one(filter={"$and": [{self.URL: url}, {self.RESPONSE_TIME: response_time}]})
 
         if record == None:
             self.mongo.logger.warning(

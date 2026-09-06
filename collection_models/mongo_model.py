@@ -34,9 +34,7 @@ class MongoModel(object):
         self.__mongo_pass = settings.BROWNIE_ATELIER_MONGO__MONGO_PASS
         self.__mongo_tls = settings.BROWNIE_ATELIER_MONGO__MONGO_TLS
         self.__mongo_tls_ca_certs = settings.BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE
-        self.__mongo_tls_certtificate_key_file = (
-            settings.BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE
-        )
+        self.__mongo_tls_certtificate_key_file = settings.BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE
 
         param: dict = {
             # 'host': quote_plus(self.__mongo_server),
