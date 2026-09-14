@@ -111,10 +111,15 @@ class ControllerModel(MongoCommonModel):
 
     def download_control_get(self, domain_name: str) -> dict:
         """同じサイトの各スパイダーが共有する減速状態を取得する。"""
-        return self.find_one(filter={
-            self.DOMAIN: domain_name,
-            self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__DOWNLOAD_CONTROL,
-        }) or {}
+        return (
+            self.find_one(
+                filter={
+                    self.DOMAIN: domain_name,
+                    self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__DOWNLOAD_CONTROL,
+                }
+            )
+            or {}
+        )
 
     def download_control_update(self, domain_name: str, state: dict) -> None:
         """変更時に保存し、途中終了でもサーバー指定の待機期限を引き継ぐ。"""

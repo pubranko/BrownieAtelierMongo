@@ -1,13 +1,11 @@
 from logging import Logger, LoggerAdapter
-from typing import Optional, Union
-from urllib.parse import quote_plus
 
 from BrownieAtelierMongo import settings
 from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 
 
-class MongoModel(object):
+class MongoModel:
     """
     MongoDB用モデル
     """
@@ -19,9 +17,9 @@ class MongoModel(object):
     __mongo_pass: str
     __mongo_client: MongoClient
     mongo_db: Database
-    logger: Union[Logger, LoggerAdapter]
+    logger: Logger | LoggerAdapter
 
-    def __init__(self, param_logger: Optional[Union[Logger, LoggerAdapter]] = None):
+    def __init__(self, param_logger: Logger | LoggerAdapter | None = None):
         if param_logger:
             self.logger = param_logger
         else:

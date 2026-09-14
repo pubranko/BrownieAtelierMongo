@@ -7,7 +7,6 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsCli
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
-from pymongo.mongo_client import MongoClient
 
 mongo = MongoModel()
 asynchronous_report_model = AsynchronousReportModel(mongo)
