@@ -1,6 +1,5 @@
-from typing import Final
+from typing import ClassVar, Final
 
-from BrownieAtelierMongo import settings
 from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
@@ -12,7 +11,7 @@ class ScrapedFromResponseModel(MongoCommonModel):
 
     mongo: MongoModel
     # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__SCRAPED_FROM_RESPONSE
-    COLLECTION_NAME: Final[str] = "scraped_from_response"
+    COLLECTION_NAME: ClassVar[str] = "scraped_from_response"
 
     ###############
     # 定数
@@ -59,11 +58,11 @@ class ScrapedFromResponseModel(MongoCommonModel):
         #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            index_list = [idx for idx in indexes[self.KEY]]
+            index_list = list(indexes[self.KEY])
 
-        if not self.SCRAPYING_START_TIME in index_list:
+        if self.SCRAPYING_START_TIME not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.SCRAPYING_START_TIME)
-        if not self.RESPONSE_TIME in index_list:
+        if self.RESPONSE_TIME not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.RESPONSE_TIME)
-        if not self.DOMAIN in index_list:
+        if self.DOMAIN not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)

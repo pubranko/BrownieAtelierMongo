@@ -1,6 +1,5 @@
-from typing import Any, Final
+from typing import Any, ClassVar, Final
 
-from BrownieAtelierMongo import settings
 from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
@@ -11,7 +10,7 @@ class StatsInfoCollectModel(MongoCommonModel):
     """
 
     mongo: MongoModel
-    COLLECTION_NAME: Final[str] = "stats_info_collect"
+    COLLECTION_NAME: ClassVar[str] = "stats_info_collect"
 
     RECORD_TYPE: Final[str] = "record_type"
     START_TIME: Final[str] = "start_time"
@@ -28,11 +27,11 @@ class StatsInfoCollectModel(MongoCommonModel):
         #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            index_list = [idx for idx in indexes[self.KEY]]
+            index_list = list(indexes[self.KEY])
 
         index_key = f"{self.START_TIME}__{self.RECORD_TYPE}__{self.SPIDER_NAME}"
         # 各indexがなかった場合、インデックスを作成する。
-        if not index_key in index_list:
+        if index_key not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(index_key)
 
     def stats_update(self, records: list, status_key: str = ""):

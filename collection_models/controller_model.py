@@ -1,6 +1,5 @@
-from typing import Any, Final
+from typing import Any, ClassVar, Final
 
-from BrownieAtelierMongo import settings
 from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
@@ -12,7 +11,7 @@ class ControllerModel(MongoCommonModel):
 
     mongo: MongoModel
     # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CONTROLLER
-    COLLECTION_NAME: Final[str] = "controller"
+    COLLECTION_NAME: ClassVar[str] = "controller"
 
     ###############################
     # コレクション内の項目名定数
@@ -23,6 +22,19 @@ class ControllerModel(MongoCommonModel):
     """各ドキュメントのタイプ(Key)"""
     DOCUMENT_TYPE__CRAWL_POINT: Final[str] = "crawl_point"
     """ドキュメントのタイプ(value): クロールポイント"""
+    DOCUMENT_TYPE__DOWNLOAD_CONTROL: Final[str] = "download_control"
+    """ドメイン共通の送信間隔・再開可能時刻（クロールポイントとは別レコード）"""
+    DOWNLOAD_DELAY: Final[str] = "download_delay"
+    """送信制御の基準間隔（秒）を保存する項目名(key)。
+
+    429 による加算後の値を次回起動へ引き継ぐ。AutoThrottle の一時的な調整値は保存しない。
+    """
+    RETRY_AFTER_UNTIL: Final[str] = "retry_after_until"
+    """送信を再開してよい日時（UTC の BSON Date）を保存する項目名(key)。
+
+    429、または有効な Retry-After を持つ 503 の待機期限を記録する。
+    次回起動時も期限前なら待機し、再起動によって待機を省略しない。
+    """
     DOCUMENT_TYPE__STOP_CONTROLLER: Final[str] = "stop_controller"
     """ドキュメントのタイプ(value): ストップコントローラー"""
     DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER: Final[str] = "regular_observation_controller"
@@ -58,12 +70,12 @@ class ControllerModel(MongoCommonModel):
         #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            index_list = [idx for idx in indexes[self.KEY]]
+            index_list = list(indexes[self.KEY])
 
         # 各indexがなかった場合、インデックスを作成する。
-        if not self.DOMAIN in index_list:
+        if self.DOMAIN not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
-        if not self.DOCUMENT_TYPE in index_list:
+        if self.DOCUMENT_TYPE not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOCUMENT_TYPE)
 
     def crawl_point_get(self, domain_name: str, spider_name: str) -> dict:
@@ -82,7 +94,7 @@ class ControllerModel(MongoCommonModel):
 
         next_point_record: dict = {}
         # レコードが存在し、かつ、同じスパイダーでクロール実績がある場合
-        if not record == None:
+        if record:
             if spider_name in record:
                 next_point_record = record[spider_name]
 
@@ -90,26 +102,25 @@ class ControllerModel(MongoCommonModel):
 
     def crawl_point_update(self, domain_name: str, spider_name: str, next_point_info: dict) -> None:
         """次回のクロールポイント情報(lastmod,urlなど)を更新する"""
-        record: Any = self.find_one(
-            filter={
-                "$and": [
-                    {self.DOMAIN: domain_name},
-                    {self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__CRAWL_POINT},
-                ]
-            }
-        )
-        if record == None:  # ドメインに対して初クロールの場合
-            record = {
-                self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__CRAWL_POINT,
-                self.DOMAIN: domain_name,
-                spider_name: next_point_info,
-            }
-        else:
-            record[spider_name] = next_point_info
-
+        # 同一 domain に download_control もあるため、必ず文書種別を含めて更新する。
+        # 文書全体や _id を書き戻さず、このスパイダーの情報だけを更新する。
         self.update_one(
-            {self.DOMAIN: domain_name},
-            {"$set": record},
+            {self.DOMAIN: domain_name, self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__CRAWL_POINT},
+            {"$set": {spider_name: next_point_info}},
+        )
+
+    def download_control_get(self, domain_name: str) -> dict:
+        """同じサイトの各スパイダーが共有する減速状態を取得する。"""
+        return self.find_one(filter={
+            self.DOMAIN: domain_name,
+            self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__DOWNLOAD_CONTROL,
+        }) or {}
+
+    def download_control_update(self, domain_name: str, state: dict) -> None:
+        """変更時に保存し、途中終了でもサーバー指定の待機期限を引き継ぐ。"""
+        self.update_one(
+            {self.DOMAIN: domain_name, self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__DOWNLOAD_CONTROL},
+            {"$set": state},
         )
 
     def crawling_stop_domain_list_get(
@@ -120,9 +131,9 @@ class ControllerModel(MongoCommonModel):
         """
         record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
-        if record == None:
+        if not record:
             return []
-        elif not self.CRAWLING_STOP_DOMAIN_LIST in record:
+        elif self.CRAWLING_STOP_DOMAIN_LIST not in record:
             return []
         else:
             return record[self.CRAWLING_STOP_DOMAIN_LIST]
@@ -133,7 +144,7 @@ class ControllerModel(MongoCommonModel):
         """
         record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
-        if record == None:  # 初回の場合
+        if not record:  # 初回の場合
             record = {
                 self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER,
                 self.CRAWLING_STOP_DOMAIN_LIST: crawling_stop_domain_list,
@@ -154,9 +165,9 @@ class ControllerModel(MongoCommonModel):
         """
         record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
-        if record == None:
+        if not record:
             return []
-        elif not self.SCRAPYING_STOP_DOMAIN_LIST in record:
+        elif self.SCRAPYING_STOP_DOMAIN_LIST not in record:
             return []
         else:
             return record[self.SCRAPYING_STOP_DOMAIN_LIST]
@@ -167,7 +178,7 @@ class ControllerModel(MongoCommonModel):
         """
         record: Any = self.find_one(filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER}]})
 
-        if record == None:  # 初回の場合
+        if not record:  # 初回の場合
             record = {
                 self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__STOP_CONTROLLER,
                 self.SCRAPYING_STOP_DOMAIN_LIST: scrapying_stop_domain_list,
@@ -190,8 +201,8 @@ class ControllerModel(MongoCommonModel):
             filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER}]}
         )
 
-        if record == None:
-            return set([])
+        if not record:
+            return set()
         else:
             return set(record[self.SPIDERS_NAME_SET])
 
@@ -203,7 +214,7 @@ class ControllerModel(MongoCommonModel):
             filter={"$and": [{self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER}]}
         )
 
-        if record == None:  # 初回の場合
+        if not record:  # 初回の場合
             record = {
                 self.DOCUMENT_TYPE: self.DOCUMENT_TYPE__REGULAR_OBSERVATION_CONTROLLER,
                 self.SPIDERS_NAME_SET: list(spiders_name_set),

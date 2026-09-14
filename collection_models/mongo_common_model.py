@@ -1,23 +1,24 @@
 import statistics
-from typing import Union
+from typing import ClassVar
 
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from pymongo.cursor import Cursor
 
 
-class MongoCommonModel(object):
+class MongoCommonModel:
     """
     mongoDBへの共通アクセス処理。
     各コレクション別のクラスでは当クラスを継承することで共通の関数を定義する必要がなくなる。
     """
 
     mongo: MongoModel
-    COLLECTION_NAME: str = "sample"
+    # 継承先ごとのコレクション名。親の共通処理も self.COLLECTION_NAME で参照する。
+    COLLECTION_NAME: ClassVar[str] = "sample"
 
     def __init__(self, mongo: MongoModel):
         self.mongo = mongo
 
-    def count(self, filter: Union[dict, None] = None) -> int:
+    def count(self, filter: dict | None = None) -> int:
         """
         コレクションのカウント。
         絞り込み条件がある場合、filterを指定してください。
@@ -28,12 +29,15 @@ class MongoCommonModel(object):
         else:
             return self.estimated_document_count()
 
-    def aggregation_pipeline_count(self, filter: Union[dict, None] = {}) -> int:
+    def aggregation_pipeline_count(self, filter: dict | None = None) -> int:
         """
         フィルターで絞り込みを行ったコレクション内のドキュメント数を返す。
         Args:
-            filter (Union[dict, None], optional): フィルターを設定。値がない場合は空の辞書({})とする。
+            filter (dict | None, optional): フィルターを設定。値がない場合は空の辞書({})とする。
         """
+        # 呼び出し間でデフォルトの辞書を共有しないよう、未指定時に生成する。
+        if filter is None:
+            filter = {}
         pipeline = [
             {
                 "$match": filter,
@@ -85,7 +89,7 @@ class MongoCommonModel(object):
         ]
         return self.mongo.mongo_db[self.COLLECTION_NAME].aggregate(pipeline=pipeline)
 
-    def limited_find(self, projection=None, filter: dict[str, list] = {}, sort=None, limit: int = 100):
+    def limited_find(self, projection=None, filter: dict[str, list] | None = None, sort=None, limit: int = 100):
         """
         ・findした結果をレコード単位で返すジェネレーター。
         ・デフォルトで100件単位でデータを取得するが、当メソッドの呼び出し元では
@@ -94,14 +98,15 @@ class MongoCommonModel(object):
             for record in news_clip_master.limited_find(filter=filter):
                 pass
         """
+        if filter is None:
+            filter = {}
         # 対象件数を確認
         record_count: int = self.count(filter=filter if filter else {})
         # 100件単位で処理を実施
         skip_list = list(range(0, record_count, limit))
         for skip in skip_list:
             records: Cursor = self.find(filter=filter, projection=projection, sort=sort).skip(skip).limit(limit)
-            for record in records:
-                yield record
+            yield from records
             del records  # 念の為処理が終わったオブジェクトを削除
 
     def document_size_info(self) -> dict:
@@ -116,10 +121,10 @@ class MongoCommonModel(object):
             document_size: int = sum([value.__sizeof__() for value in record.values()])
             document_size_list.append(document_size)
 
-        return dict(
-            document_coumt=self.count(),
-            document_max=max(document_size_list),
-            document_min=min(document_size_list),
-            document_mean=round(statistics.mean(document_size_list), 1),  # 小数点以下1位まで
-            document_sum=sum(document_size_list),
-        )
+        return {
+            "document_coumt": self.count(),
+            "document_max": max(document_size_list),
+            "document_min": min(document_size_list),
+            "document_mean": round(statistics.mean(document_size_list), 1),  # 小数点以下1位まで
+            "document_sum": sum(document_size_list),
+        }

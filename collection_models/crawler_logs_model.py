@@ -1,7 +1,6 @@
 from datetime import datetime
-from typing import Final
+from typing import ClassVar, Final
 
-from BrownieAtelierMongo import settings
 from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from scrapy.statscollectors import MemoryStatsCollector
@@ -14,7 +13,7 @@ class CrawlerLogsModel(MongoCommonModel):
 
     mongo: MongoModel
     # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CRAWLER_LOGS
-    COLLECTION_NAME: Final[str] = "crawler_logs"
+    COLLECTION_NAME: ClassVar[str] = "crawler_logs"
 
     # spider_reportとstatsのログ（他はまだ見ていない）
     START_TIME: Final[str] = "start_time"
@@ -53,7 +52,8 @@ class CrawlerLogsModel(MongoCommonModel):
 
     # レコードタイプ(value)
     RECORD_TYPE__FLOW_REPORTS: Final[str] = "flow_reports"
-    """レコードタイプ(value): フローレポート  Prefect Flowのログ"""  # 現在タスク名にしているレコードタイプをこれに変更したい。
+    """レコードタイプ(value): フローレポート  Prefect Flowのログ"""
+    # 現在タスク名にしているレコードタイプをこれに変更したい。
     RECORD_TYPE__SPIDER_REPORTS: Final[str] = "spider_reports"
     """レコードタイプ(value): スパイダーレポート  Spiderのログ"""
 
@@ -65,11 +65,11 @@ class CrawlerLogsModel(MongoCommonModel):
         #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            index_list = [idx for idx in indexes[self.KEY]]
+            index_list = list(indexes[self.KEY])
 
         # 各indexがなかった場合、インデックスを作成する。
         index_key: str = f"{self.START_TIME}__{self.RECORD_TYPE}__{self.DOMAIN}"
-        if not index_key in index_list:
+        if index_key not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(index_key)
 
     def spider_report_insert(
@@ -84,7 +84,8 @@ class CrawlerLogsModel(MongoCommonModel):
         クロールの統計結果とクロールを行ったサイトの一覧情報を「spider_report」としてログに保存する。
         """
 
-        # spiderの統計情報（stats）を取得し、mongoDBにKeyとして保存できない文字列ドット(.)をアンダースコア(_)へ変更する。
+        # spiderの統計情報（stats）を取得する。
+        # mongoDBにKeyとして保存できない文字列ドット(.)をアンダースコア(_)へ変更する。
         stats_edit: dict = {}
         for item in stats.get_stats().items():
             key: str = str(item[0]).replace(".", "_")
