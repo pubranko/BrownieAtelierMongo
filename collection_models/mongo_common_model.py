@@ -79,7 +79,7 @@ class MongoCommonModel:
 
     def delete_many(self, filter) -> int:
         result = self.mongo.mongo_db[self.COLLECTION_NAME].delete_many(filter=filter)
-        return int(result.deleted_count)
+        return result.deleted_count
 
     def custom_aggregate(self, aggregate_key: str):
         """渡された集計keyによる集計結果を返す。"""

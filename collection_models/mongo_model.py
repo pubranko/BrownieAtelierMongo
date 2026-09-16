@@ -43,7 +43,7 @@ class MongoModel:
             "authSource": self.__mongo_db_name,  # ユーザー認証を行うDB
         }
         # tls認証を行う場合、以下のパラメータを追加
-        if str(self.__mongo_tls).lower() == "true":
+        if self.__mongo_tls.lower() == "true":
             param.update(
                 {
                     "tls": True,

@@ -3,7 +3,7 @@ import os
 from collections.abc import Generator
 from typing import Any, Final
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class ScraperInfoByDomainConst:
@@ -38,8 +38,9 @@ class ScraperInfoByDomainData(BaseModel):
     # 単項目チェック、省略時の値設定
     ##################################
 
-    @validator("scraper")
-    def scraper_domain_check(cls, value: dict, values: dict) -> dict:
+    @field_validator("scraper")
+    @classmethod
+    def scraper_domain_check(cls, value: dict) -> dict:
         # if not 'domain' in value:
         if ScraperInfoByDomainConst.DOMAIN not in value:
             raise ValueError(f"不正データ。ドメイン({ScraperInfoByDomainConst.DOMAIN})が定義されていません。{value}")
@@ -49,8 +50,9 @@ class ScraperInfoByDomainData(BaseModel):
             )
         return value
 
-    @validator("scraper")
-    def scraper_items_check(cls, value: dict, values: dict) -> dict:
+    @field_validator("scraper")
+    @classmethod
+    def scraper_items_check(cls, value: dict) -> dict:
         # if not 'scrape_items' in value:
         if ScraperInfoByDomainConst.SCRAPE_ITEMS not in value:
             raise ValueError(

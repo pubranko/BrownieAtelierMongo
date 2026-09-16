@@ -88,7 +88,7 @@ class CrawlerLogsModel(MongoCommonModel):
         # mongoDBにKeyとして保存できない文字列ドット(.)をアンダースコア(_)へ変更する。
         stats_edit: dict = {}
         for item in stats.get_stats().items():
-            key: str = str(item[0]).replace(".", "_")
+            key: str = item[0].replace(".", "_")
             stats_edit[key] = item[1]
 
         # 【データイメージ】
