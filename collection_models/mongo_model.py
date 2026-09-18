@@ -1,13 +1,11 @@
 from logging import Logger, LoggerAdapter
-from typing import Optional, Union
-from urllib.parse import quote_plus
 
 from BrownieAtelierMongo import settings
 from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 
 
-class MongoModel(object):
+class MongoModel:
     """
     MongoDB用モデル
     """
@@ -19,9 +17,9 @@ class MongoModel(object):
     __mongo_pass: str
     __mongo_client: MongoClient
     mongo_db: Database
-    logger: Union[Logger, LoggerAdapter]
+    logger: Logger | LoggerAdapter
 
-    def __init__(self, param_logger: Optional[Union[Logger, LoggerAdapter]] = None):
+    def __init__(self, param_logger: Logger | LoggerAdapter | None = None):
         if param_logger:
             self.logger = param_logger
         else:
@@ -34,9 +32,7 @@ class MongoModel(object):
         self.__mongo_pass = settings.BROWNIE_ATELIER_MONGO__MONGO_PASS
         self.__mongo_tls = settings.BROWNIE_ATELIER_MONGO__MONGO_TLS
         self.__mongo_tls_ca_certs = settings.BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE
-        self.__mongo_tls_certtificate_key_file = (
-            settings.BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE
-        )
+        self.__mongo_tls_certtificate_key_file = settings.BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE
 
         param: dict = {
             # 'host': quote_plus(self.__mongo_server),
@@ -47,7 +43,7 @@ class MongoModel(object):
             "authSource": self.__mongo_db_name,  # ユーザー認証を行うDB
         }
         # tls認証を行う場合、以下のパラメータを追加
-        if str(self.__mongo_tls).lower() == "true":
+        if self.__mongo_tls.lower() == "true":
             param.update(
                 {
                     "tls": True,

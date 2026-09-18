@@ -1,11 +1,8 @@
 from datetime import datetime
-from typing import Any, Final
+from typing import Any, ClassVar, Final
 
-from BrownieAtelierMongo import settings
-from BrownieAtelierMongo.collection_models.mongo_common_model import \
-    MongoCommonModel
+from BrownieAtelierMongo.collection_models.mongo_common_model import MongoCommonModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from pymongo import ASCENDING
 
 
 class CrawlerResponseModel(MongoCommonModel):
@@ -15,7 +12,7 @@ class CrawlerResponseModel(MongoCommonModel):
 
     mongo: MongoModel
     # collection_name: str = settings.BROWNIE_ATELIER_MONGO__COLLECTION__CRAWLER_RESPONSE
-    COLLECTION_NAME: Final[str] = "crawler_response"
+    COLLECTION_NAME: ClassVar[str] = "crawler_response"
 
     ###############################
     # コレクション内の項目名定数
@@ -50,7 +47,9 @@ class CrawlerResponseModel(MongoCommonModel):
     NEWS_CLIP_MASTER_REGISTER__COMPLETE: Final[str] = "登録完了"
     """定数(value): スクレイプしたデータをニュースクリップマスターへ登録したことを意味する。"""
     NEWS_CLIP_MASTER_REGISTER__SKIP: Final[str] = "登録内容に差異なしのため不要"
-    """定数(value): スクレイプしたデータが登録済みであったため、ニュースクリップマスターへの登録をスキップしたことを意味する。"""
+    """定数(value): スクレイプしたデータが登録済みであったため、
+    ニュースクリップマスターへの登録をスキップしたことを意味する。
+    """
 
     def __init__(self, mongo: MongoModel):
         super().__init__(mongo)
@@ -60,31 +59,31 @@ class CrawlerResponseModel(MongoCommonModel):
         #   indexes['key']のデータイメージ => SON([('_id', 1)])、SON([('response_time', 1)])
         index_list: list = []
         for indexes in self.mongo.mongo_db[self.COLLECTION_NAME].list_indexes():
-            index_list = [idx for idx in indexes[self.KEY]]
+            index_list = list(indexes[self.KEY])
 
         # 各indexがなかった場合、インデックスを作成する。
-        if not self.RESPONSE_TIME in index_list:
+        if self.RESPONSE_TIME not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.RESPONSE_TIME)
-        if not self.CRAWLING_START_TIME in index_list:
+        if self.CRAWLING_START_TIME not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.CRAWLING_START_TIME)
-        if not self.DOMAIN in index_list:
+        if self.DOMAIN not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.DOMAIN)
-        if not self.URL in index_list:
+        if self.URL not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.URL)
-        if not self.NEWS_CLIP_MASTER_REGISTER in index_list:
+        if self.NEWS_CLIP_MASTER_REGISTER not in index_list:
             self.mongo.mongo_db[self.COLLECTION_NAME].create_index(self.NEWS_CLIP_MASTER_REGISTER)
 
     def news_clip_master_register_result(
         self, url: str, response_time: datetime, news_clip_master_register: str
     ) -> None:
         """news_clip_masterへの登録結果を反映させる"""
-        record: Any = self.find_one(
-            filter={"$and": [{self.URL: url}, {self.RESPONSE_TIME: response_time}]}
-        )
+        record: Any = self.find_one(filter={"$and": [{self.URL: url}, {self.RESPONSE_TIME: response_time}]})
 
-        if record == None:
+        if record is None:
             self.mongo.logger.warning(
-                f"=== 【url= {url}, response_time= {response_time} news_clip_master_register= {news_clip_master_register}】 のデータでが既に削除されていたためnews_clip_masterへの登録結果を反映させる処理をスキップしました。"
+                f"=== 【url= {url}, response_time= {response_time} "
+                f"news_clip_master_register= {news_clip_master_register}】 "
+                "のデータでが既に削除されていたためnews_clip_masterへの登録結果を反映させる処理をスキップしました。"
             )
         else:
             record[self.NEWS_CLIP_MASTER_REGISTER] = news_clip_master_register
